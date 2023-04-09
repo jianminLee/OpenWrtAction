@@ -50,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platforms: [X86, R5S, R4S, R2S, R2C, Pi4_Model_B]
+        platforms: [X86]
 
     steps:
     - name: Initialization environment
@@ -189,6 +189,8 @@ jobs:
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
+        zip -jr passwall_packages_ipk_x86.zip packages/*passwall*.ipk
+        mv packages/*passwall*.ipk ./        
         rm -rf packages
         mv sha256sums sha256sums_${{ matrix.platforms }}
         mv version.buildinfo version_${{ matrix.platforms }}.buildinfo
@@ -295,7 +297,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: steps.tag.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt

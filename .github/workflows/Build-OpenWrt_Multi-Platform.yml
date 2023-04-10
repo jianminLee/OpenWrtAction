@@ -157,6 +157,7 @@ jobs:
         cd openwrt
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 || make -j1 V=s
+        make package/luci-app-passwall/{clean,compile} -j$(($(nproc)))
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -189,8 +190,8 @@ jobs:
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
-        zip -r packages_ipk_x86.zip packages/*
-        # mv packages/*passwall*.ipk ./        
+        zip -jr passwall_packages_ipk_x86_64.zip bin/packages/*/passwall_packages/
+        mv bin/packages/*/passwall_luci/*.ipk ./     
         rm -rf packages
         mv sha256sums sha256sums_${{ matrix.platforms }}
         mv version.buildinfo version_${{ matrix.platforms }}.buildinfo
@@ -234,18 +235,8 @@ jobs:
         echo "### Kernel Information" >> release.txt
 
         kernel_X86=$(sed -n '13p' $GITHUB_WORKSPACE/openwrt/target/linux/x86/Makefile | awk -F '=' '{print $2}')
-        kernel_R5S=$(sed -n '10p' $GITHUB_WORKSPACE/openwrt/target/linux/rockchip/Makefile | awk -F '=' '{print $2}')
-        kernel_R4S=$(sed -n '10p' $GITHUB_WORKSPACE/openwrt/target/linux/rockchip/Makefile | awk -F '=' '{print $2}')
-        kernel_R2S=$(sed -n '10p' $GITHUB_WORKSPACE/openwrt/target/linux/rockchip/Makefile | awk -F '=' '{print $2}')
-        kernel_R2C=$(sed -n '10p' $GITHUB_WORKSPACE/openwrt/target/linux/rockchip/Makefile | awk -F '=' '{print $2}')
-        kernel_Pi4ModelB=$(sed -n '14p' $GITHUB_WORKSPACE/openwrt/target/linux/bcm27xx/Makefile | awk -F '=' '{print $2}')
 
         echo "**:ice_cube: X86 kernel: $(sed -n '2p' $GITHUB_WORKSPACE/openwrt/include/kernel-${kernel_X86} | awk -F '-' '{print $2}' | awk -F ' =' '{print $1}')**" >> release.txt
-        echo "**:ice_cube: R5S kernel: $(sed -n '2p' $GITHUB_WORKSPACE/openwrt/include/kernel-${kernel_R5S} | awk -F '-' '{print $2}' | awk -F ' =' '{print $1}')**" >> release.txt
-        echo "**:ice_cube: R4S kernel: $(sed -n '2p' $GITHUB_WORKSPACE/openwrt/include/kernel-${kernel_R4S} | awk -F '-' '{print $2}' | awk -F ' =' '{print $1}')**" >> release.txt
-        echo "**:ice_cube: R2S kernel: $(sed -n '2p' $GITHUB_WORKSPACE/openwrt/include/kernel-${kernel_R2S} | awk -F '-' '{print $2}' | awk -F ' =' '{print $1}')**" >> release.txt
-        echo "**:ice_cube: R2C kernel: $(sed -n '2p' $GITHUB_WORKSPACE/openwrt/include/kernel-${kernel_R2C} | awk -F '-' '{print $2}' | awk -F ' =' '{print $1}')**" >> release.txt
-        echo "**:ice_cube: Pi4ModelB kernel: $(sed -n '2p' $GITHUB_WORKSPACE/openwrt/include/kernel-${kernel_Pi4ModelB} | awk -F '-' '{print $2}' | awk -F ' =' '{print $1}')**" >> release.txt
 
 
 

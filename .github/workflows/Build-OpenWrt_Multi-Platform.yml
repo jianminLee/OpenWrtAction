@@ -189,8 +189,8 @@ jobs:
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
-        zip -jr passwall_packages_ipk_x86.zip packages/*passwall*.ipk
-        mv packages/*passwall*.ipk ./        
+        zip -r packages_ipk_x86.zip packages/*
+        # mv packages/*passwall*.ipk ./        
         rm -rf packages
         mv sha256sums sha256sums_${{ matrix.platforms }}
         mv version.buildinfo version_${{ matrix.platforms }}.buildinfo

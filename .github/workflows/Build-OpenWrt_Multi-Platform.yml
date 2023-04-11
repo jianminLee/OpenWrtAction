@@ -190,16 +190,17 @@ jobs:
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
         cd openwrt
-        zip -jr bin/targets/*/*/passwall_packages_ipk_x86_64.zip bin/packages/*/passwall_packages/
-        mv bin/packages/*/passwall_luci/*.ipk bin/targets/*/*
+        mkdir upload
+        # zip -jr bin/targets/*/*/passwall_packages_ipk_x86_64.zip bin/packages/*/passwall_packages/
+        mv bin/packages/*/passwall_luci/*.ipk upload
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "status=success" >> $GITHUB_OUTPUT
         cd bin/targets/*/*
         rm -rf packages
         mv sha256sums sha256sums_${{ matrix.platforms }}
         mv version.buildinfo version_${{ matrix.platforms }}.buildinfo
         mv config.buildinfo config_${{ matrix.platforms }}.buildinfo
         mv feeds.buildinfo feeds_${{ matrix.platforms }}.buildinfo
-        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-        echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload firmware directory
       uses: actions/upload-artifact@main
@@ -293,7 +294,7 @@ jobs:
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-        files: ${{ env.FIRMWARE }}/*
+        files: ${{ env.FIRMWARE }}/upload/*
 
 
     # - name: Generate commit
